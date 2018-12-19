@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd"
+       xmlns:context="http://www.springframework.org/schema/context">
+    <!-- Annotation-based beans -->
+    <context:component-scan base-package="com.groupstp.import1cstp"/>
+    <bean class="com.haulmont.cuba.web.sys.remoting.WebRemoteProxyBeanCreator">
+        <property name="serverSelector"
+                  ref="cuba_ServerSelector"/>
+        <property name="remoteServices">
+            <map>
+                <entry key="import1cstp_EntityImportService"
+                       value="com.groupstp.import1cstp.service.EntityImportService"/>
+                <entry key="import1cstp_ImportControllerService"
+                       value="com.groupstp.import1cstp.service.ImportControllerService"/>
+                <entry key="import1cstp_QueryDaoService"
+                       value="com.groupstp.import1cstp.service.QueryDaoService"/>
+                <entry key="import1cstp_Sync1CService"
+                       value="com.groupstp.import1cstp.service.Sync1CService"/>
+                <entry key="import1cstp_SettingsService"
+                       value="com.groupstp.import1cstp.service.SettingsService"/>
+            </map>
+        </property>
+    </bean>
+</beans>

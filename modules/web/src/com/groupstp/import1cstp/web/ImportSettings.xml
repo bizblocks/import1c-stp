@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/window.xsd"
+        caption="msg://caption"
+        class="com.groupstp.import1cstp.web.Importsettings"
+        messagesPack="com.groupstp.import1cstp.web">
+    <dsContext>
+        <collectionDatasource id="directoryDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+        <collectionDatasource id="selectedDirectoryDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+        <collectionDatasource id="systemEntityDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+        <collectionDatasource id="associationDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+        <collectionDatasource id="directoryFieldsDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+        <collectionDatasource id="entityFieldsDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+        <collectionDatasource id="configuredDirectoryDs"
+                              allowCommit="false"
+                              class="com.groupstp.import1cstp.entity.TreeItem"
+                              refreshMode="NEVER"/>
+    </dsContext>
+    <dialogMode height="800"
+                resizable="true"
+                width="1200"/>
+    <layout>
+        <accordion id="accordion"
+                   height="100%">
+            <tab caption="msg://connection_settings"
+                 margin="true,false,false,false"
+                 spacing="true">
+                <vbox align="MIDDLE_CENTER"
+                      spacing="true">
+                    <hbox align="MIDDLE_CENTER"
+                          spacing="true"
+                          width="779px">
+                        <textField id="urlField"
+                                   caption="msg://url"
+                                   width="372px"/>
+                        <textField id="passwordField"
+                                   caption="msg://password"
+                                   width="373px"/>
+                    </hbox>
+                    <hbox align="MIDDLE_CENTER"
+                          spacing="true"
+                          width="776px">
+                        <button id="checkConnectionBtn"
+                                caption="msg://check_connection"
+                                invoke="onCheckConnectionBtnClick"/>
+                        <label id="checkConnectionLabel"/>
+                    </hbox>
+                </vbox>
+            </tab>
+            <tab caption="msg://directory_settings"
+                 margin="true"
+                 spacing="true">
+                <twinColumn id="twinColumn"
+                            height="100%"
+                            leftColumnCaption="msg://available"
+                            optionsDatasource="directoryDs"
+                            rightColumnCaption="msg://in_use"
+                            width="100%"/>
+            </tab>
+            <tab caption="msg://mapping"
+                 margin="true,false,false,false"
+                 spacing="true">
+                <split height="100%"
+                       orientation="horizontal"
+                       pos="20"
+                       width="100%">
+                    <table caption="msg://directory"
+                           height="100%"
+                           width="100%">
+                        <columns>
+                            <column id="name"
+                                    caption="msg://directory"/>
+                        </columns>
+                        <rows datasource="selectedDirectoryDs"/>
+                    </table>
+                    <vbox expand="mainFieldNbox"
+                          height="100%"
+                          spacing="true">
+                        <hbox spacing="true"
+                              width="100%">
+                            <lookupField id="entityLookupField"
+                                         caption="msg://system_entity"
+                                         optionsDatasource="systemEntityDs"
+                                         width="100%"/>
+                            <checkBox id="denyCreationCheckbox"
+                                      align="BOTTOM_LEFT"
+                                      caption="msg://deny_creation"/>
+                        </hbox>
+                        <hbox id="mainFieldNbox"
+                              spacing="true"
+                              width="100%">
+                            <vbox expand="fieldTableHbox"
+                                  height="100%"
+                                  spacing="true">
+                                <buttonsPanel>
+                                    <button id="addAssociationBtn"
+                                            caption="msg://add_conformity"
+                                            invoke="onAddAssociationBtnClick"/>
+                                </buttonsPanel>
+                                <hbox id="fieldTableHbox"
+                                      spacing="true"
+                                      width="100%">
+                                    <table height="100%"
+                                           width="100%">
+                                        <columns>
+                                            <column id="name"
+                                                    caption="msg://directory_fields"/>
+                                        </columns>
+                                        <rows datasource="directoryFieldsDs"/>
+                                    </table>
+                                    <table height="100%"
+                                           width="100%">
+                                        <columns>
+                                            <column id="name"
+                                                    caption="msg://entity_fields"/>
+                                        </columns>
+                                        <rows datasource="entityFieldsDs"/>
+                                    </table>
+                                </hbox>
+                            </vbox>
+                            <vbox expand="associationTable"
+                                  height="100%"
+                                  spacing="true">
+                                <buttonsPanel>
+                                    <button id="deleteAssociationBtn"
+                                            action="associationTable.deleteAssociation"
+                                            caption="msg://delete_conformity"/>
+                                </buttonsPanel>
+                                <table id="associationTable"
+                                       width="100%">
+                                    <actions>
+                                        <action id="deleteAssociation"
+                                                caption="msg://delete_conformity"
+                                                invoke="onDeleteAssociation"
+                                                trackSelection="true"/>
+                                    </actions>
+                                    <columns>
+                                        <column id="stringValue1"
+                                                caption="msg://directory_field"/>
+                                        <column id="stringValue2"
+                                                caption="msg://entity_field"/>
+                                    </columns>
+                                    <rows datasource="associationDs"/>
+                                </table>
+                            </vbox>
+                        </hbox>
+                    </vbox>
+                </split>
+            </tab>
+            <tab caption="msg://task"
+                 margin="true,false,false,false"
+                 spacing="true">
+                <vbox spacing="true">
+                    <hbox spacing="true">
+                        <dateField id="beginDateField"
+                                   caption="msg://begin_date"/>
+                        <textField id="periodField"
+                                   caption="msg://periodicity"
+                                   datatype="int"/>
+                    </hbox>
+                    <table id="syncTaskTable"
+                           width="100%">
+                        <columns>
+                            <column id="stringValue1"
+                                    caption="msg://directory"/>
+                            <column id="stringValue2"
+                                    caption="msg://entity"/>
+                        </columns>
+                        <rows datasource="configuredDirectoryDs"/>
+                    </table>
+                </vbox>
+            </tab>
+        </accordion>
+    </layout>
+</window>

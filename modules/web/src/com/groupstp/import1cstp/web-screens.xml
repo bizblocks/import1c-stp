@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<screen-config xmlns="http://schemas.haulmont.com/cuba/screens.xsd">
+
+    <screen id="ImportSettings"
+            template="com/groupstp/import1cstp/web/ImportSettings.xml"/>
+
+</screen-config>
