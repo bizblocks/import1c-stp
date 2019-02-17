@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.cubaVersion = '6.10.5'
+    ext.cubaVersion = '6.10.7'
     repositories {
         
         maven {
@@ -37,6 +37,9 @@ cuba {
     }
     tomcat {
         dir = "$project.rootDir/deploy/tomcat"
+    }
+    ide {
+        vcs = 'Git'
     }
 }
 
