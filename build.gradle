@@ -32,8 +32,8 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.import1cstp'
-        version = '0.1'
-        isSnapshot = true
+        version = "0.2"
+        isSnapshot = false
     }
     tomcat {
         dir = "$project.rootDir/deploy/tomcat"
