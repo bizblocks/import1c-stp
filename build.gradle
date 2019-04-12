@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.cubaVersion = '6.10.7'
+    ext.cubaVersion = '6.10.8'
     repositories {
         
         maven {
@@ -32,7 +32,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.import1cstp'
-        version = "0.2"
+        version = "0.2.1"
         isSnapshot = false
     }
     tomcat {
@@ -40,6 +40,9 @@ cuba {
     }
     ide {
         vcs = 'Git'
+    }
+    uploadRepository {
+        url = myMavenRepoWriteUrl
     }
 }
 
