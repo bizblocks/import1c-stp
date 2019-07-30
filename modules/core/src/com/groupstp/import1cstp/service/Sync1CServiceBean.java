@@ -35,7 +35,15 @@ public class Sync1CServiceBean implements Sync1CService {
         com.google.gson.JsonParser p = new com.google.gson.JsonParser();
         return p.parse(in);
     }
-
+    /**
+     * Выполняет HTTP запрос ( basic authorization)
+     *
+     * @param url address
+     * @param userpass  password
+     * @param user  username
+     * @param body  request body
+     * @return JsonElement
+     */
     @Override
     public JsonElement getData1C(String url, String userpass, String user, String body) throws IOException, NoSuchAlgorithmException {
         String authStr = user + ":" + userpass;
