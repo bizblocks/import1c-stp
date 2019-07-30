@@ -36,6 +36,29 @@ public class Sync1CServiceBean implements Sync1CService {
         return p.parse(in);
     }
 
+    @Override
+    public JsonElement getData1C(String url, String userpass, String user, String body) throws IOException, NoSuchAlgorithmException {
+        String authStr = user + ":" + userpass;
+        byte[] authBytes = Base64.encodeBase64(authStr.getBytes());
+        String authString = new String(authBytes);
+        URL urlData = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection)urlData.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Authorization", "Basic " + authString);
+        connection.setRequestProperty("Accept", "application/x-www-form-urlencoded");
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        OutputStream os = connection.getOutputStream();
+        os.write(body.getBytes());
+        os.flush();
+        os.close();
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        com.google.gson.JsonParser p = new com.google.gson.JsonParser();
+        JsonElement json = p.parse(in);
+        return json;
+    }
+
     private static String passHash(String pass) throws NoSuchAlgorithmException {
         MessageDigest crypt = MessageDigest.getInstance("MD5");
         return arr2Hex(crypt.digest(pass.getBytes()));
