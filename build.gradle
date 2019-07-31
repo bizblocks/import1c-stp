@@ -32,7 +32,7 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'com.groupstp.import1cstp'
-        version = "0.2.1"
+        version = "0.2.2"
         isSnapshot = false
     }
     tomcat {
