@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service(Sync1CService.NAME)
 public class Sync1CServiceBean implements Sync1CService {
@@ -62,8 +63,36 @@ public class Sync1CServiceBean implements Sync1CService {
         os.close();
         BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         com.google.gson.JsonParser p = new com.google.gson.JsonParser();
-        JsonElement json = p.parse(in);
-        return json;
+        return (p.parse(in));
+    }
+    /**
+     * Выполняет HTTP запрос ( basic authorization)
+     * @param url      address
+     * @param userpass password
+     * @param user     username
+     * @param body    request body
+     * @return String
+     */
+    @Override
+    public String getStringData1C(String url, String userpass, String user, String body) throws IOException, NoSuchAlgorithmException {
+        String authStr = user + ":" + userpass;
+        byte[] authBytes = Base64.getEncoder().encode(authStr.getBytes());
+        String authString = new String(authBytes);
+        URL urlData = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection)urlData.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Authorization", "Basic " + authString);
+        connection.setRequestProperty("Accept", "application/x-www-form-urlencoded");
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        OutputStream os = connection.getOutputStream();
+        os.write(body.getBytes());
+        os.flush();
+        os.close();
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String result=in.lines().collect(Collectors.joining());
+        return result;
     }
 
     private static String passHash(String pass) throws NoSuchAlgorithmException {
