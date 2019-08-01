@@ -1,8 +1,8 @@
 package com.groupstp.import1cstp.service;
-
 import com.google.gson.JsonElement;
 import org.springframework.stereotype.Service;
-
+import java.util.Base64;
+import java.io.OutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,7 +15,6 @@ import java.util.Map;
 
 @Service(Sync1CService.NAME)
 public class Sync1CServiceBean implements Sync1CService {
-
     @Override
     public JsonElement getData1C(String url, String userpass) throws IOException, NoSuchAlgorithmException {
         return this.getData1C(url, userpass, new HashMap<>());
@@ -27,7 +26,7 @@ public class Sync1CServiceBean implements Sync1CService {
         HttpURLConnection con = (HttpURLConnection) u.openConnection();
         con.setRequestMethod("GET");
         params.put("hash", passHash(userpass));
-        for (Map.Entry<String,String> e: params.entrySet()) {
+        for (Map.Entry<String, String> e : params.entrySet()) {
             con.setRequestProperty(e.getKey(), e.getValue());
         }
         con.setDoInput(true);
@@ -35,19 +34,19 @@ public class Sync1CServiceBean implements Sync1CService {
         com.google.gson.JsonParser p = new com.google.gson.JsonParser();
         return p.parse(in);
     }
+
     /**
      * Выполняет HTTP запрос ( basic authorization)
-     *
-     * @param url address
-     * @param userpass  password
-     * @param user  username
-     * @param body  request body
+     * @param url      address
+     * @param userpass password
+     * @param user     username
+     * @param body    request body
      * @return JsonElement
      */
     @Override
     public JsonElement getData1C(String url, String userpass, String user, String body) throws IOException, NoSuchAlgorithmException {
         String authStr = user + ":" + userpass;
-        byte[] authBytes = Base64.encodeBase64(authStr.getBytes());
+        byte[] authBytes = Base64.getEncoder().encode(authStr.getBytes());
         String authString = new String(authBytes);
         URL urlData = new URL(url);
         HttpURLConnection connection = (HttpURLConnection)urlData.openConnection();
@@ -72,12 +71,10 @@ public class Sync1CServiceBean implements Sync1CService {
         return arr2Hex(crypt.digest(pass.getBytes()));
     }
 
-    private static String arr2Hex(byte[] a)
-    {
+    private static String arr2Hex(byte[] a) {
         StringBuilder res = new StringBuilder();
-        for(byte num:a)
-        {
-            if(num<0)
+        for (byte num : a) {
+            if (num < 0)
                 num = (byte) (num + 0x100);
             res.append(String.format("%02x", num));
         }
