@@ -4,6 +4,7 @@ import com.groupstp.import1cstp.entity.TreeItem;
 import com.groupstp.import1cstp.service.ImportControllerService;
 import com.groupstp.import1cstp.service.QueryDaoService;
 import com.groupstp.import1cstp.service.SettingsService;
+import com.groupstp.import1cstp.service.Sync1CService;
 import com.haulmont.chile.core.model.MetaClass;
 import com.haulmont.cuba.core.entity.BaseUuidEntity;
 import com.haulmont.cuba.core.entity.ScheduledTask;
@@ -49,6 +50,9 @@ public class Importsettings extends AbstractWindow {
     private CollectionDatasource<TreeItem,UUID> configuredDirectoryDs;
 
     @Inject
+    private Sync1CService sync1CService;
+
+    @Inject
     private Table<TreeItem> syncTaskTable;
 
     @Inject
@@ -56,6 +60,9 @@ public class Importsettings extends AbstractWindow {
 
     @Inject
     private TextField passwordField;
+
+    @Inject
+    private TextField userNameField;
 
     @Inject
     private Accordion accordion;
@@ -106,6 +113,7 @@ public class Importsettings extends AbstractWindow {
     private String directoryListSettingsKey=ImportControllerService.directoryListSettingsKey;
     private String urlSettingsKey=ImportControllerService.urlSettingsKey;
     private String passwordSettingsKey=ImportControllerService.passwordSettingsKey;
+    private String userNameSettingsKey=ImportControllerService.userNameSettingsKey;
     private String directoryKey=ImportControllerService.directoryKey;
 
     private boolean ignoreEntityChange=false;
@@ -122,20 +130,10 @@ public class Importsettings extends AbstractWindow {
             passwordField.setValue(settingsService.getObjectValue(passwordSettingsKey));
         }
         catch(Exception e){}
-        addAssociationBtn.setEnabled(false);
-
-        ScheduledTask syncTask=queryDaoService.getAnySyncScheduledTask();
-
-        if(syncTask!=null){
-            periodField.setValue(syncTask.getPeriod()/3600);
-            beginDateField.setValue(syncTask.getStartDate());
+        try{
+            userNameField.setValue(settingsService.getObjectValue(userNameSettingsKey));
         }
-
-        initDataSources();
-        refreshStaticDs();
-        initComponents();
-
-
+        catch(Exception e){}
     }
 
     private void initComponents(){
@@ -456,14 +454,20 @@ public class Importsettings extends AbstractWindow {
     }
 
     public void onCheckConnectionBtnClick() {
-        settingsService.setValue(urlSettingsKey,urlField.getRawValue());
-        settingsService.setValue(passwordSettingsKey,passwordField.getRawValue());
-       if( importControllerService.getAllDirectories(urlField.getRawValue(),passwordField.getRawValue()).size()>0){
-           checkConnectionLabel.setValue(getMessage("connection_established"));
-       }
-        else{
-           checkConnectionLabel.setValue(getMessage("connection_error"));
-       }
+        settingsService.setValue(urlSettingsKey, urlField.getRawValue());
+        settingsService.setValue(userNameSettingsKey, userNameField.getRawValue());
+        settingsService.setValue(passwordSettingsKey, passwordField.getRawValue());
+        String bodyString = "{  \"inn\": [\"1000000\"],\"date_begin\":\"20190101\",\"date_end\":\"20191201\"}";
+        String result = null;
+        try {
+            result = sync1CService.getStringData1C(urlField.getRawValue(), passwordField.getRawValue(), userNameField.getRawValue(), bodyString);
+        } catch (Exception e) {
+        }
+        if (result != null) {
+            checkConnectionLabel.setValue(getMessage("connection_established"));
+        } else {
+            checkConnectionLabel.setValue(getMessage("connection_error"));
+        }
     }
 
     public void onDeleteAssociation(Component source) {

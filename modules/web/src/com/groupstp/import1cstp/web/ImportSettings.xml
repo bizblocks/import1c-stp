@@ -43,25 +43,29 @@
                  margin="true,false,false,false"
                  spacing="true">
                 <vbox align="MIDDLE_CENTER"
+                      height="493px"
                       spacing="true">
-                    <hbox align="MIDDLE_CENTER"
-                          spacing="true"
-                          width="779px">
+                    <vbox align="MIDDLE_CENTER"
+                          height="441px"
+                          width="582px">
                         <textField id="urlField"
+                                   align="MIDDLE_LEFT"
                                    caption="msg://url"
-                                   width="372px"/>
+                                   width="579px"/>
+                        <textField id="userNameField"
+                                   align="MIDDLE_LEFT"
+                                   caption="msg://username"
+                                   width="373px"/>
                         <textField id="passwordField"
+                                   align="MIDDLE_LEFT"
                                    caption="msg://password"
                                    width="373px"/>
-                    </hbox>
-                    <hbox align="MIDDLE_CENTER"
-                          spacing="true"
-                          width="776px">
                         <button id="checkConnectionBtn"
                                 caption="msg://check_connection"
                                 invoke="onCheckConnectionBtnClick"/>
                         <label id="checkConnectionLabel"/>
-                    </hbox>
+
+                    </vbox>
                 </vbox>
             </tab>
             <tab caption="msg://directory_settings"

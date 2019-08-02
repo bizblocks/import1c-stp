@@ -80,18 +80,22 @@ public class Sync1CServiceBean implements Sync1CService {
         String authString = new String(authBytes);
         URL urlData = new URL(url);
         HttpURLConnection connection = (HttpURLConnection)urlData.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Authorization", "Basic " + authString);
-        connection.setRequestProperty("Accept", "application/x-www-form-urlencoded");
-        connection.setDoOutput(true);
-        connection.setDoInput(true);
-        OutputStream os = connection.getOutputStream();
-        os.write(body.getBytes());
-        os.flush();
-        os.close();
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String result=in.lines().collect(Collectors.joining());
+        String result=null;
+        try {
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Basic " + authString);
+            connection.setRequestProperty("Accept", "application/x-www-form-urlencoded");
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            OutputStream os = connection.getOutputStream();
+            os.write(body.getBytes());
+            os.flush();
+            os.close();
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            result = in.lines().collect(Collectors.joining());
+        }catch (Exception e) {
+        }
         return result;
     }
 

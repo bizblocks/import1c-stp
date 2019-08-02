@@ -9,6 +9,7 @@ public interface ImportControllerService {
     String directoryListSettingsKey="1CDirectories";
     String urlSettingsKey="1Curl";
     String passwordSettingsKey="1Cpassword";
+    String userNameSettingsKey="1Cusername";
     String directoryKey="1CDirectory";
 
     List<String> getAllDirectories(String url, String pass);
