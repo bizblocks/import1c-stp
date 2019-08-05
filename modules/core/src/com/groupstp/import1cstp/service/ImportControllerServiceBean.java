@@ -46,26 +46,42 @@ public class ImportControllerServiceBean implements ImportControllerService {
     @Inject
     private DataManager dataManager;
 
+    @Override
+    public String directImportFrom1C(String query) {
+        String url="";
+        String pass="";
+        String username="";
+        String result=null;
+        try {
+            url = (String) settingsService.getObjectValue(urlSettingsKey);
+            pass = (String) settingsService.getObjectValue(passwordSettingsKey);
+            username=(String) settingsService.getObjectValue(userNameSettingsKey);
+            result = sync1CService.getStringData1C(url,pass,username,query);
+        } catch (Exception e) {
+            return result;
+        }
+        return result;
+    }
 
-    private Map<String,Float> progressMap=new ConcurrentHashMap<>();
+    private Map<String, Float> progressMap = new ConcurrentHashMap<>();
 
 
     @Override
-    public List<String> getAllDirectories(String url, String pass){
+    public List<String> getAllDirectories(String url, String pass) {
         HashMap<String, String> params = new HashMap<>();
-        List <String> result=new ArrayList<>();
+        List<String> result = new ArrayList<>();
         params.put("references", "");
 
         JsonArray data = null;
         try {
-            data = (JsonArray) sync1CService.getData1C(url+"references", pass,params);
+            data = (JsonArray) sync1CService.getData1C(url + "references", pass, params);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        if(data==null) return result;
-        for (JsonElement e: data) {
+        if (data == null) return result;
+        for (JsonElement e : data) {
             JsonObject o = e.getAsJsonObject();
             String value = o.get("Имя").getAsString();
             result.add(value);
@@ -75,21 +91,21 @@ public class ImportControllerServiceBean implements ImportControllerService {
     }
 
     @Override
-    public List<String> getDirectoryFields(String url, String pass, String reference){
+    public List<String> getDirectoryFields(String url, String pass, String reference) {
         HashMap<String, String> params = new HashMap<>();
-        List <String> result=new ArrayList<>();
+        List<String> result = new ArrayList<>();
         params.put("reference", reference);
-        params.put("type","attributes");
+        params.put("type", "attributes");
         JsonArray data = null;
         try {
-            data = (JsonArray) sync1CService.getData1C(url+"references", pass,params);
+            data = (JsonArray) sync1CService.getData1C(url + "references", pass, params);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        if(data==null) throw new RuntimeException("no attributes for "+reference);
-        for (JsonElement e: data) {
+        if (data == null) throw new RuntimeException("no attributes for " + reference);
+        for (JsonElement e : data) {
             JsonObject o = e.getAsJsonObject();
             String value = o.get("Реквизит").getAsString();
             result.add(value);
@@ -99,92 +115,91 @@ public class ImportControllerServiceBean implements ImportControllerService {
 
     @Override
     @Authenticated
-    public void importFrom1C(String url, String pass, String directoryName){
+    public void importFrom1C(String url, String pass, String directoryName) {
 
         String fieldAssociations;
         try {
-            fieldAssociations = (String) settingsService.getObjectValue(directoryKey+"-"+directoryName);
-        }
-        catch (NullPointerException e){
+            fieldAssociations = (String) settingsService.getObjectValue(directoryKey + "-" + directoryName);
+        } catch (NullPointerException e) {
             return;
         }
-        if("".equals(fieldAssociations))return;
-        progressMap.put(directoryName,(float)0);
-        String entityName=fieldAssociations.substring(0,fieldAssociations.indexOf("."));
+        if ("".equals(fieldAssociations)) return;
+        progressMap.put(directoryName, (float) 0);
+        String entityName = fieldAssociations.substring(0, fieldAssociations.indexOf("."));
 
-        List<String> associationList=Arrays.asList(fieldAssociations.split(";"))
+        List<String> associationList = Arrays.asList(fieldAssociations.split(";"))
                 .stream()
-                .map(item->item.replace(entityName+".",""))
+                .map(item -> item.replace(entityName + ".", ""))
                 .collect(Collectors.toList());
-        Map<String,String> associationMap=associationList
+        Map<String, String> associationMap = associationList
                 .stream()
                 .collect(Collectors.toMap(
-                        item->item.substring(0,item.indexOf("-"))
-                        ,item->item.substring(item.indexOf("-")+1)
+                        item -> item.substring(0, item.indexOf("-"))
+                        , item -> item.substring(item.indexOf("-") + 1)
                 ));
-        List<String> attributesToLoad=associationList
+        List<String> attributesToLoad = associationList
                 .stream()
-                .map(item->item.substring(item.indexOf("-")+1))
-                .collect(Collectors.toList());;
-        EntityJSONAdapter adapter=new EntityJSONAdapter();
+                .map(item -> item.substring(item.indexOf("-") + 1))
+                .collect(Collectors.toList());
+        ;
+        EntityJSONAdapter adapter = new EntityJSONAdapter();
 
-        boolean associationsContainExtId=false;
-        for(Map.Entry<String,String> entry:associationMap.entrySet()){
-            if("extId".equals(entry.getKey())) {
-                associationsContainExtId=true;
+        boolean associationsContainExtId = false;
+        for (Map.Entry<String, String> entry : associationMap.entrySet()) {
+            if ("extId".equals(entry.getKey())) {
+                associationsContainExtId = true;
                 break;
             }
         }
-        if(!associationsContainExtId){
+        if (!associationsContainExtId) {
             attributesToLoad.add("УникальныйИдентификатор");
-            adapter.addFieldDescription("УникальныйИдентификатор","extId",50);
+            adapter.addFieldDescription("УникальныйИдентификатор", "extId", 50);
         }
 
         HashMap<String, String> params = new HashMap<>();
         params.put("reference", directoryName);
         params.put("type", "data");
-        params.put("attributes","["+attributesToLoad.stream().map(item->"\""+item+"\"").collect(Collectors.joining(","))+"]");
+        params.put("attributes", "[" + attributesToLoad.stream().map(item -> "\"" + item + "\"").collect(Collectors.joining(",")) + "]");
 
         //загружаем только те поля, которые есть в справочнике настроек
         JsonArray data = null;
         try {
-            data = (JsonArray) sync1CService.getData1C(url+"references", pass,params);
+            data = (JsonArray) sync1CService.getData1C(url + "references", pass, params);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
-        if((data==null)||(data.size()==0))return;
+        if ((data == null) || (data.size() == 0)) return;
 
         //если в ответе есть поле в формате имяПоляУникальныйИдентификатор, то именно оно будет соответствовать полю сущности
-        for(Map.Entry<String,String> entry:associationMap.entrySet()){
-            if(data.get(0).getAsJsonObject().get(entry.getValue()+"УникальныйИдентификатор")!=null){
-                putValueToAdapter(adapter,entry.getValue()+"УникальныйИдентификатор",entry.getKey(),entityName);
+        for (Map.Entry<String, String> entry : associationMap.entrySet()) {
+            if (data.get(0).getAsJsonObject().get(entry.getValue() + "УникальныйИдентификатор") != null) {
+                putValueToAdapter(adapter, entry.getValue() + "УникальныйИдентификатор", entry.getKey(), entityName);
+            } else {
+                putValueToAdapter(adapter, entry.getValue(), entry.getKey(), entityName);
             }
-            else{
-                putValueToAdapter(adapter,entry.getValue(),entry.getKey(),entityName);
-            }
         }
 
-        boolean creationDenied=false;
-        try{
-            creationDenied= (boolean) settingsService.getObjectValue(directoryKey+"-"+directoryName+".denyCreation");
-        }
-        catch (Exception e){
+        boolean creationDenied = false;
+        try {
+            creationDenied = (boolean) settingsService.getObjectValue(directoryKey + "-" + directoryName + ".denyCreation");
+        } catch (Exception e) {
 
         }
 
-        int i=0;
-        List<JsonElement> errors=new ArrayList<>();
-        for (JsonElement e: data) {
+        int i = 0;
+        List<JsonElement> errors = new ArrayList<>();
+        for (JsonElement e : data) {
 
-            if(i==0) {  //первый объект содержит имена колонок
-                i++;continue;
+            if (i == 0) {  //первый объект содержит имена колонок
+                i++;
+                continue;
             }
 
             try {
-                entityImportService.importData(adapter.prepareJSONForImport(e.getAsJsonObject(),entityName).getAsJsonObject(),creationDenied);
-                progressMap.put(directoryName,  ((float)i/(float)data.size()));
+                entityImportService.importData(adapter.prepareJSONForImport(e.getAsJsonObject(), entityName).getAsJsonObject(), creationDenied);
+                progressMap.put(directoryName, ((float) i / (float) data.size()));
 
             } catch (Exception e1) {
                 e1.printStackTrace();
@@ -199,33 +214,32 @@ public class ImportControllerServiceBean implements ImportControllerService {
 
     @Override
     public Boolean isSyncScheduledTaskActiveForDirectory(String directoryName) {
-        ScheduledTask task= queryDaoService.getSyncScheduledTaskForDirectory(directoryName);
-        if(task==null) return false;
+        ScheduledTask task = queryDaoService.getSyncScheduledTaskForDirectory(directoryName);
+        if (task == null) return false;
         return task.getActive();
     }
 
     @Override
     public void updateSyncForDirectory(String directoryName, Boolean syncActive, int period, Date beginDate) {
-        String url,pass;
-        try{
-            url= (String) settingsService.getObjectValue(urlSettingsKey);
-            pass= (String) settingsService.getObjectValue(passwordSettingsKey);
-        }
-        catch(Exception e){
+        String url, pass;
+        try {
+            url = (String) settingsService.getObjectValue(urlSettingsKey);
+            pass = (String) settingsService.getObjectValue(passwordSettingsKey);
+        } catch (Exception e) {
             return;
         }
-        ScheduledTask task= queryDaoService.getSyncScheduledTaskForDirectory(directoryName);
-        if(task==null){
-            task=metadata.create(ScheduledTask.class);
+        ScheduledTask task = queryDaoService.getSyncScheduledTaskForDirectory(directoryName);
+        if (task == null) {
+            task = metadata.create(ScheduledTask.class);
             task.setDefinedBy(ScheduledTaskDefinedBy.BEAN);
             task.setSchedulingType(SchedulingType.PERIOD);
             task.setBeanName("import1cstp_ImportControllerService");
             task.setMethodName("importFrom1C");
 
         }
-        task.setPeriod(period*3600); //из часов в секунды
+        task.setPeriod(period * 3600); //из часов в секунды
         task.setStartDate(beginDate);
-        task.setMethodParamsXml(makeMethodParamXml(url,pass,directoryName));
+        task.setMethodParamsXml(makeMethodParamXml(url, pass, directoryName));
 
         //schedulingService.setActive(task,syncActive);
         task.setActive(syncActive);
@@ -234,56 +248,55 @@ public class ImportControllerServiceBean implements ImportControllerService {
 
     }
 
-    private String makeMethodParamXml(String url,String password,String directoryName){
-        return "<?xml version='1.0' encoding='UTF-8'?>"+
-                " <params>"+
-                "<param type='java.lang.String' name='url'>"+url+"</param>"+
-                "<param type='java.lang.String' name='pass'>"+password+"</param>"+
-                "<param type='java.lang.String' name='directoryName'>"+directoryName+"</param>"+
+    private String makeMethodParamXml(String url, String password, String directoryName) {
+        return "<?xml version='1.0' encoding='UTF-8'?>" +
+                " <params>" +
+                "<param type='java.lang.String' name='url'>" + url + "</param>" +
+                "<param type='java.lang.String' name='pass'>" + password + "</param>" +
+                "<param type='java.lang.String' name='directoryName'>" + directoryName + "</param>" +
                 "</params>";
     }
 
     @Override
     public Float getProgress(String directoryName) {
-        Float result=progressMap.get(directoryName);
-        if(result==null) return (float)0;
+        Float result = progressMap.get(directoryName);
+        if (result == null) return (float) 0;
         else return result;
     }
 
 
-    private void putValueToAdapter(EntityJSONAdapter adapter,String directoryField,String entityField,String entityName){
+    private void putValueToAdapter(EntityJSONAdapter adapter, String directoryField, String entityField, String entityName) {
         int length;
         try {
-            length=metadata.getSession().getClassNN(entityName).getJavaClass().getDeclaredField(entityField).getAnnotation(Column.class).length();
+            length = metadata.getSession().getClassNN(entityName).getJavaClass().getDeclaredField(entityField).getAnnotation(Column.class).length();
         } catch (NoSuchFieldException e) {
             return;
+        } catch (Exception e) {
+            length = 50;
         }
-        catch (Exception e){
-            length=50;
-        }
-        adapter.addFieldDescription(directoryField,entityField,length);
+        adapter.addFieldDescription(directoryField, entityField, length);
     }
 
 
-    class EntityJSONAdapter{
+    class EntityJSONAdapter {
 
-        private Map<String,String> fieldNameMap=new HashMap<>();
-        private Map<String,Integer> fieldLengthMap=new HashMap<>();
+        private Map<String, String> fieldNameMap = new HashMap<>();
+        private Map<String, Integer> fieldLengthMap = new HashMap<>();
 
-        JsonObject prepareJSONForImport(JsonObject obj,String type){
+        JsonObject prepareJSONForImport(JsonObject obj, String type) {
 
-            JsonObject result=new JsonObject();
+            JsonObject result = new JsonObject();
 
-            result.addProperty("type",type);
+            result.addProperty("type", type);
 
-            obj.entrySet().forEach(entry->{
+            obj.entrySet().forEach(entry -> {
 
-                if((fieldNameMap.get(entry.getKey())!=null)&&(!(entry.getValue() instanceof JsonNull))){
+                if ((fieldNameMap.get(entry.getKey()) != null) && (!(entry.getValue() instanceof JsonNull))) {
                     result.addProperty(fieldNameMap.get(entry.getKey()),
-                            fieldLengthMap.get(entry.getKey())==null?
-                                    entry.getValue().getAsString():
-                                    entry.getValue().getAsString().length()>=fieldLengthMap.get(entry.getKey())?
-                                            entry.getValue().getAsString().substring(0,fieldLengthMap.get(entry.getKey())-1)
+                            fieldLengthMap.get(entry.getKey()) == null ?
+                                    entry.getValue().getAsString() :
+                                    entry.getValue().getAsString().length() >= fieldLengthMap.get(entry.getKey()) ?
+                                            entry.getValue().getAsString().substring(0, fieldLengthMap.get(entry.getKey()) - 1)
                                             : entry.getValue().getAsString()
                     );
                 }
@@ -294,17 +307,17 @@ public class ImportControllerServiceBean implements ImportControllerService {
 
         }
 
-        public void addFieldDescription(String jsonName,String javaName,int length){
-            fieldNameMap.put(jsonName,javaName);
-            fieldLengthMap.put(jsonName,length);
+        public void addFieldDescription(String jsonName, String javaName, int length) {
+            fieldNameMap.put(jsonName, javaName);
+            fieldLengthMap.put(jsonName, length);
         }
 
-        public void addFieldDescription(String jsonName,String javaName){
-            fieldNameMap.put(jsonName,javaName);
+        public void addFieldDescription(String jsonName, String javaName) {
+            fieldNameMap.put(jsonName, javaName);
 
         }
 
-        public void clearMaps(){
+        public void clearMaps() {
             fieldLengthMap.clear();
             fieldNameMap.clear();
         }

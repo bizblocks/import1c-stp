@@ -21,6 +21,6 @@ public interface ImportControllerService {
     Boolean isSyncScheduledTaskActiveForDirectory(String entityName);
 
     void updateSyncForDirectory(String directoryName, Boolean syncActive, int period, Date beginDate);
-
+    String directImportFrom1C(String query);
     Float getProgress(String directoryName);
 }
